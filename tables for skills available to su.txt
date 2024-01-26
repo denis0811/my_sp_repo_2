@@ -1,0 +1,106 @@
+ CREATE TABLE IF NOT EXISTS {schema_name}.service_provider_staff (
+            sp_staff_id SERIAL PRIMARY KEY,
+            sp_id INTEGER,
+            first_name VARCHAR NOT NULL,
+            middle_name VARCHAR,
+            last_name VARCHAR, 
+            address VARCHAR,
+            postcode VARCHAR,
+            telephone VARCHAR,
+            email VARCHAR,
+            sp_staff_guid UUID DEFAULT uuid_generate_v4(),
+            national_insurance_number VARCHAR,
+            max_commute INTEGER,
+            CONSTRAINT fk_sp_id
+                FOREIGN KEY (sp_id)
+                REFERENCES {schema_name}.service_provider(sp_id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE
+
+
+ CREATE TABLE IF NOT EXISTS {schema_name}.service_user (
+            su_id SERIAL PRIMARY KEY,
+            name TEXT,
+            address TEXT,
+            postcode TEXT,
+            service_user_guid UUID DEFAULT uuid_generate_v4(),
+            sp_id INTEGER REFERENCES {schema_name}.service_provider(sp_id),
+            parent_id INTEGER DEFAULT 0,
+            outsourced_id INTEGER DEFAULT 0,
+            CONSTRAINT unique_service_user_name_postcode UNIQUE (name, postcode),
+            CONSTRAINT fk_sp_id
+                FOREIGN KEY (sp_id)
+                REFERENCES {schema_name}.service_provider(sp_id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE
+
+     CREATE TABLE IF NOT EXISTS {schema_name}.contractor (
+            contractor_id SERIAL PRIMARY KEY,
+            sp_id INTEGER,
+            su_id INTEGER,
+           -- staff_id INTEGER,
+            contract_details_id INTEGER,
+            CONSTRAINT fk_sp_id
+                FOREIGN KEY (sp_id)
+                REFERENCES {schema_name}.service_provider(sp_id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE,
+            CONSTRAINT fk_su_id
+                FOREIGN KEY (su_id)
+                REFERENCES {schema_name}.service_user(su_id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE
+           -- CONSTRAINT fk_staff_id
+           --     FOREIGN KEY (staff_id)
+            --    REFERENCES {schema_name}.service_provider_staff(sp_staff_id)
+            --    ON DELETE SET NULL
+           --     ON UPDATE CASCADE
+        );
+
+
+ CREATE TABLE IF NOT EXISTS {schema_name}.skills_list (
+            skills_list_id SERIAL PRIMARY KEY,
+            skill_name VARCHAR(255),
+            sp_id INTEGER,
+            CONSTRAINT fk_service_provider
+                FOREIGN KEY (sp_id)
+                REFERENCES {schema_name}.service_provider(sp_id)
+                ON DELETE CASCADE,
+            CONSTRAINT uc_skill_sp UNIQUE (skill_name, sp_id)
+        );
+
+  CREATE TABLE IF NOT EXISTS {schema_name}.staff_skill (
+            staff_skill_id SERIAL PRIMARY KEY,
+            skills_list_id IN TEGER,
+            sp_staff_id INTEGER,
+            CONSTRAINT fk_skills_list
+                FOREIGN KEY (skills_list_id)
+                REFERENCES {schema_name}.skills_list(skills_list_id)
+                ON DELETE CASCADE,
+            CONSTRAINT fk_sp_staff
+                FOREIGN KEY (sp_staff_id)
+                REFERENCES {schema_name}.service_provider_staff(sp_staff_id)
+                ON DELETE CASCADE
+        );
+
+ CREATE TABLE IF NOT EXISTS {schema_name}.service_provider (
+            sp_id SERIAL PRIMARY KEY,
+            name TEXT,
+            address TEXT,
+            postcode TEXT,
+            parent_id INTEGER,
+            sp_level TEXT,
+            sp_guid UUID DEFAULT uuid_generate_v4() UNIQUE,
+            max_distance INTEGER DEFAULT 100,
+            CONSTRAINT fk_sp_id
+                FOREIGN KEY (sp_id)
+                REFERENCES {schema_name}.service_provider(sp_id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE
+        );
+TODO: updae the staff_id column in contractor to match all staff with the matching skill for sp_id in contractor
+
+
+using the above table defintions, for a given su_id from service_user table and for all staff_id in contractor table for that su_id, and for all sp_staff_id for that sp_id in the contractor table, and for all skills_list_id for the sp_staff_id in staff_skill
+
+write a query to return al the skills ( skill_name and skill_id) available to a given su_id from the service_user table

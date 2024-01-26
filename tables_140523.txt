@@ -1,0 +1,162 @@
+# Create the proximity table in the schema
+        cur.execute(f"""
+            CREATE TABLE IF NOT EXISTS {schema_name}.proximity (
+            proximity_id SERIAL PRIMARY KEY,
+            staff_id INTEGER NOT NULL,
+            sp_id INTEGER NOT NULL,
+            su_id INTEGER NOT NULL,
+            distance DECIMAL,
+            proximate BOOLEAN,
+            proximity_guid UUID DEFAULT uuid_generate_v4()
+            );
+        """)
+
+
+        # Create the staff table in the schema
+        cur.execute(f"""
+            CREATE TABLE IF NOT EXISTS {schema_name}.staff (
+            staff_id SERIAL PRIMARY KEY,
+            first_name VARCHAR NOT NULL,
+            middle_name VARCHAR,
+            last_name VARCHAR, 
+            address VARCHAR,
+            postcode VARCHAR,
+            telephone VARCHAR,
+            email VARCHAR,
+            staff_guid UUID DEFAULT uuid_generate_v4()
+            );
+        """)
+
+        # cur.execute('CREATE TABLE IF NOT EXISTS shift_pattern (pattern_id SERIAL PRIMARY KEY, name VARCHAR NOT NULL, pattern JSON NOT NULL);')
+        cur.execute(f'CREATE TABLE IF NOT EXISTS {schema_name}.shift_pattern ( pattern_id SERIAL PRIMARY KEY,  name VARCHAR NOT NULL UNIQUE,  pattern VARCHAR NOT NULL UNIQUE);')
+
+        # Create the CREATE TABLE SQL command for the "rota" table
+        cur.execute(f"""
+            CREATE TABLE IF NOT EXISTS {schema_name}.rota (
+            rota_id SERIAL PRIMARY KEY,
+            staff_id INTEGER,
+            pattern_id INTEGER,
+            rota_guid UUID DEFAULT uuid_generate_v4(),
+            CONSTRAINT fk_staff_id
+                FOREIGN KEY (staff_id)
+                REFERENCES {schema_name}.staff(staff_id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE,
+            CONSTRAINT fk_pattern_id
+                FOREIGN KEY (pattern_id)
+                REFERENCES {schema_name}.shift_pattern(pattern_id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE
+            );
+        """)
+
+        # Create the service_provider table in the schema
+        cur.execute(f"""
+            CREATE TABLE  IF NOT EXISTS {schema_name}.service_provider (
+            sp_id SERIAL PRIMARY KEY,
+            name TEXT,
+            address TEXT,
+            postcode TEXT,
+            parent_id INTEGER DEFAULT 0, -- REFERENCES {schema_name}.service_provider(sp_id),
+            sp_level TEXT,
+            sp_guid UUID DEFAULT uuid_generate_v4() UNIQUE
+            );
+        -- INSERT INTO {schema_name}.service_provider (name, address, postcode, parent_id) 
+            --   VALUES (NULL, NULL, NULL, 0);
+
+
+        """)
+
+        cur.execute(f"""
+            CREATE TABLE IF NOT EXISTS public.service_provider (
+                id SERIAL PRIMARY KEY,
+                sp_guid UUID,
+                sp_id INTEGER,
+                name TEXT,
+                parent_id INTEGER DEFAULT 0, -- REFERENCES public.service_provider(sp_id),
+                sp_level TEXT
+            -- # CONSTRAINT fk_service_provider
+            -- #     FOREIGN KEY (sp_guid)
+                --#     REFERENCES {schema_name}.service_provider(sp_guid)
+            -- #     ON UPDATE CASCADE
+            -- #     ON DELETE CASCADE
+            );
+        """)
+
+
+        # Create the service provider staff table in the schema
+        cur.execute(f"""
+            CREATE TABLE IF NOT EXISTS {schema_name}.service_provider_staff (
+            sp_staff_id SERIAL PRIMARY KEY,
+            sp_id INTEGER,
+            first_name VARCHAR NOT NULL,
+            middle_name VARCHAR,
+            last_name VARCHAR, 
+            address VARCHAR,
+            postcode VARCHAR,
+            telephone VARCHAR,
+            email VARCHAR,
+            sp_staff_guid UUID DEFAULT uuid_generate_v4()
+            );
+        """)
+
+        # Create the CREATE TABLE SQL command for the "service provider rota" table
+        cur.execute(f"""
+            CREATE TABLE IF NOT EXISTS {schema_name}.service_provider_rota (
+            rota_id SERIAL PRIMARY KEY,
+            sp_id INTEGER,
+            sp_staff_id INTEGER,
+            pattern_id INTEGER,
+            sp_rota_guid UUID DEFAULT uuid_generate_v4(),
+            CONSTRAINT fk_staff_id
+                FOREIGN KEY (sp_staff_id)
+                REFERENCES {schema_name}.service_provider_staff(sp_staff_id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE,
+            CONSTRAINT fk_pattern_id
+                FOREIGN KEY (pattern_id)
+                REFERENCES {schema_name}.shift_pattern(pattern_id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE
+        );
+        """)
+    
+        # Create the sites table in the schema
+        # cur.execute(f"""
+        #     CREATE TABLE IF NOT EXISTS {schema_name}.service_user (
+        #     su_id SERIAL PRIMARY KEY,
+        #     name TEXT,
+        #     address TEXT,
+        #     postcode TEXT,
+        #     service_user_guid UUID DEFAULT uuid_generate_v4(),
+        #     sp_id INTEGER REFERENCES {schema_name}.service_provider(sp_id),
+        #     parent_id INTEGER DEFAULT 0
+        #     );
+
+
+        #     """)
+        
+        cur.execute(f"""
+            CREATE TABLE IF NOT EXISTS {schema_name}.service_user (
+            su_id SERIAL PRIMARY KEY,
+            name TEXT,
+            address TEXT,
+            postcode TEXT,
+            service_user_guid UUID DEFAULT uuid_generate_v4(),
+            sp_id INTEGER REFERENCES {schema_name}.service_provider(sp_id),
+            parent_id INTEGER DEFAULT 0,
+            outsourced_id INTEGER DEFAULT 0,
+            CONSTRAINT unique_service_user_name_postcode UNIQUE (name, postcode)
+            );
+            """)
+
+        # Create the CREATE TABLE SQL command for the "service provider rota" table
+        cur.execute(f"""
+            CREATE TABLE IF NOT EXISTS {schema_name}.service_user_rota (
+            rota_id SERIAL PRIMARY KEY,
+            su_staff_id INTEGER,
+            pattern_id INTEGER,
+            su_rota_guid UUID DEFAULT uuid_generate_v4()
+            --Add constraints here on staff from provider and their availabilty
+        );
+        """) rewrite the create table scripts to enable the cascade of deletions from the service_provider table through the service_user, service_provider_staff  table, removing all tables with matching sp_id. also remove from staff

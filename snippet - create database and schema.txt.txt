@@ -1,0 +1,18 @@
+def build_schema(self, schema):
+    conn = self.db_class.connect()
+    cur = conn.cursor()
+
+    # Create the rota1 database
+    cur.execute("CREATE DATABASE rota1")
+
+    # Connect to the rota1 database
+    conn.close()
+    conn = self.db_class.connect(database="rota1")
+    cur = conn.cursor()
+
+    # Create the schema_name schema
+    cur.execute(f"CREATE SCHEMA {schema}")
+
+    # Close the connection
+    cur.close()
+    conn.close()

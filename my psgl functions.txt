@@ -1,0 +1,33 @@
+CREATE OR REPLACE FUNCTION {schema_name}.count_staff_by_sp_id(sp_id INTEGER)
+RETURNS INTEGER AS $$
+BEGIN
+  RETURN (SELECT COUNT(*) FROM {schema_name}.staff WHERE staff_id = sp_id);
+END;
+$$ LANGUAGE plpgsql;
+
+
+SELECT {schema_name}.count_staff_by_sp_id(123);
+=========================================================================
+
+QUERY: count of children in provider table
+SELECT 
+    s.name, 
+    s.sp_id, 
+    COUNT(*) AS child_count
+FROM 
+    sp1_saunders_plc.service_provider s
+LEFT JOIN 
+    sp1_saunders_plc.service_provider c ON s.sp_id = c.parent_id
+GROUP BY 
+    s.name, 
+    s.sp_id;
+
+==========================================================================
+Query : Group all sp counts
+SELECT 
+    sp_level, 
+    COUNT(*) AS level_count
+FROM 
+    sp1_mccarthy_wilson.service_provider
+GROUP BY 
+    sp_level;

@@ -1,0 +1,23 @@
+Do we want su to be inserted by sub-contractors?Model would imply that sp_n could becoe sp1 in some cases and sp1 could then be sp_n. Not sure that i like that idea
+
+su rota? cover times and numbers
+
+Map sites to sps
+
+Map staff to sites
+
+proximity matrix
+
+centrally mananged staffing. sp1 can see all staff in proximity and assign to subs accordingly
+
+add capability to import staff and sites via spreadsheet import
+
+TADA reinsert postcodes to valid_postcodes from rota_generator
+
+Add a table for su_id and sp_id tht shows all the sp_ids that can provide service to a su_id
+
+*********************************************TODO*********************************************
+ def check_postcode(postcode): is in aux_tools: Checks if a pc is UK valid  -
+ clean_pc_table(postcodes): grabs all of pcs in table and checks for validity, deleting invalid entries. 
+                            TODO: Check for validity before inserting new pc
+                            TODO: Check pc is valid before using in proximity matrix

@@ -1,0 +1,66 @@
+ CREATE TABLE IF NOT EXISTS {schema_name}.service_user (
+            su_id SERIAL PRIMARY KEY,
+            name TEXT,
+            address TEXT,
+            postcode TEXT,
+            service_user_guid UUID DEFAULT uuid_generate_v4(),
+            sp_id INTEGER REFERENCES {schema_name}.service_provider(sp_id),
+            parent_id INTEGER DEFAULT 0,
+            outsourced_id INTEGER DEFAULT 0,
+            CONSTRAINT unique_service_user_name_postcode UNIQUE (name, postcode),
+            CONSTRAINT fk_sp_id
+                FOREIGN KEY (sp_id)
+                REFERENCES {schema_name}.service_provider(sp_id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE
+
+
+
+
+ CREATE TABLE  IF NOT EXISTS {schema_name}.service_provider (
+            sp_id SERIAL PRIMARY KEY,
+            name TEXT,
+            address TEXT,
+            postcode TEXT,
+            parent_id INTEGER, -- REFERENCES {schema_name}.service_provider(sp_id),
+            sp_level TEXT,
+            sp_guid UUID DEFAULT uuid_generate_v4() UNIQUE,
+            CONSTRAINT fk_sp_id
+                FOREIGN KEY (sp_id)
+                REFERENCES {schema_name}.service_provider(sp_id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE
+
+
+CREATE TABLE IF NOT EXISTS {schema_name}.proximity (
+            proximity_id SERIAL PRIMARY KEY,
+            staff_id INTEGER NOT NULL,
+            sp_id INTEGER NOT NULL,
+            su_id INTEGER NOT NULL,
+            distance DECIMAL,
+            proximate BOOLEAN,
+            proximity_guid UUID DEFAULT uuid_generate_v4(),
+            CONSTRAINT fk_sp_id
+                FOREIGN KEY (sp_id)
+                REFERENCES {schema_name}.service_provider(sp_id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE
+
+
+CREATE TABLE IF NOT EXISTS {schema_name}.service_provider_staff (
+            sp_staff_id SERIAL PRIMARY KEY,
+            sp_id INTEGER,
+            first_name VARCHAR NOT NULL,
+            middle_name VARCHAR,
+            last_name VARCHAR, 
+            address VARCHAR,
+            postcode VARCHAR,
+            telephone VARCHAR,
+            email VARCHAR,
+            sp_staff_guid UUID DEFAULT uuid_generate_v4(),
+            national_insurance_number VARCHAR,
+            CONSTRAINT fk_sp_id
+                FOREIGN KEY (sp_id)
+                REFERENCES {schema_name}.service_provider(sp_id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE

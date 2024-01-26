@@ -1,0 +1,11 @@
+def call_function_in_public_schema(self, schema):
+    conn = self.db_class.connect()
+    cur = conn.cursor()
+
+    cur.callproc('public.function_in_schema', [schema])
+    result = cur.fetchone()[0]  # Extract the result from the returned tuple
+
+    cur.close()
+    conn.close()
+
+    return result
